@@ -1,3 +1,7 @@
+# Jakub Opyrchał (266252)
+# LAB 18.05.2023
+# Algorytmy i Struktury Danych
+
 from collections import deque
 import random
 
