@@ -23,7 +23,6 @@ def Encode(symbols):
         nodes.append(Node(qty, symbol, None, None))
 
     while len(nodes) > 1:
-        # Find the two nodes with the lowest frequency
         min1, min2 = Node(float('inf'), None, None, None), Node(float('inf'), None, None, None)
         for node in nodes:
             if node.qty < min1.qty:
@@ -32,10 +31,8 @@ def Encode(symbols):
             elif node.qty < min2.qty:
                 min2 = node
 
-        # Combine the two nodes into a new node
         parent = Node(min1.qty + min2.qty, None, min1, min2)
 
-        # Remove the two nodes from the list and add the new node
         nodes.remove(min1)
         nodes.remove(min2)
         nodes.append(parent)

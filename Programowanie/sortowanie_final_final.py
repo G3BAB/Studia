@@ -61,6 +61,7 @@ def scorePlot(score, n, tag):
     """Tworzy ploty dla poszczegolnych algorytmow"""
     XP = n
     YP = score
+    print(score)
     plot.plot(XP, YP, label=tag)
 
 

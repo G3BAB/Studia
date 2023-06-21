@@ -1,7 +1,6 @@
 # Jakub Opyrchał (266252)
 # LAB 18.05.2023
 # Algorytmy i Struktury Danych
-
 from collections import deque
 import random
 
@@ -14,6 +13,11 @@ class Graph:
         if vertex not in self.graph:
             self.graph[vertex] = []
         self.graph[vertex].append(edge)
+
+    def getPreferences(self, vertex):
+        if vertex in self.graph:
+            return self.graph[vertex]
+        return []
 
 
 def dfs(graph, start):
@@ -30,6 +34,7 @@ def dfs(graph, start):
                     dfsVisit(handledGraph, neighbor, visit)
     visited = set()
     dfsVisit(graph, start, visited)
+
     return visitOrder
 
 
@@ -88,6 +93,7 @@ def randomGraph(numVertices, numEdges):
 
     # mało eleganckie podejście 'brute force' żeby dostać w pełni połączony graf
     # (powoduje to, że generowanie grafów a > 20 jest niepraktyczne)
+
     connectivityCheck = []
     while connectivityCheck != numVertices:
         potentialGraph = randomizer(numVertices, numEdges)
@@ -97,15 +103,45 @@ def randomGraph(numVertices, numEdges):
     return potentialGraph
 
 
-a = 8  # liczba węzłów
-b = 6   # minimalna liczba krawędzi, w rzeczywistości może się zwiększyć w celu spełnienia wymogów grafu
+def stable_marriage(males, females):
+    unengaged_males = set(males.keys())
+    engagements = {}
 
-rGraph = randomGraph(a, b)
+    while unengaged_males:
+        male = unengaged_males.pop()
+        preferences = males[male].copy()
+
+        for female in preferences:
+            if female not in engagements:
+                engagements[female] = male
+                break
+            else:
+                current_engagement = engagements[female]
+                female_preferences = females[female]
+
+                if female_preferences.index(male) < female_preferences.index(current_engagement):
+                    engagements[female] = male
+                    unengaged_males.add(current_engagement)
+                    break
+
+    return engagements
 
 
-print("DFS:")
-dfsResult = dfs(rGraph.graph, 1)
-print(dfsResult)
-print("\nBFS:")
-bfsResult = bfs(rGraph.graph, 1)
-print(bfsResult)
+males = {
+    'Janusz': ['Danuta', 'Gienia', 'Stasia', 'Judyta'],
+    'Stanisław': ['Gienia', 'Stasia', 'Danuta', 'Judyta'],
+    'Gienio': ['Judyta', 'Stasia', 'Gienia', 'Danuta'],
+    'Kazimierz': ['Stasia', 'Danuta', 'Gienia', 'Judyta']
+}
+
+females = {
+    'Danuta': ['Stanisław', 'Janusz', 'Gienio', 'Kazimierz'],
+    'Judyta': ['Kazimierz', 'Gienio', 'Stanisław', 'Janusz'],
+    'Gienia': ['Janusz', 'Stanisław', 'Gienio', 'Kazimierz'],
+    'Stasia': ['Gienio', 'Janusz', 'Stanisław', 'Kazimierz']
+}
+
+engagements = stable_marriage(males, females)
+
+for female, male in engagements.items():
+    print(f"{male} engaged to {female}")
