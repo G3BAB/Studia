@@ -26,6 +26,8 @@ def randomGraph(numVertices, numEdges, weights=10):
        2. Vertex pairs are unique (no duplicate edges).
        3. All elements of the graph are connected, i.e., from any element, you can reach any other element."""
 
+    potentialGraph = None
+
     def randomizer(nVertices, nEdges, weight_pool):
         rGraph = Graph()
         handled = []
@@ -55,24 +57,24 @@ def randomGraph(numVertices, numEdges, weights=10):
         return rGraph
 
     # Check connectivity to ensure a fully connected graph
-    def dfs(graph, vertex, visited):
-        visited.add(vertex)
-        for neighbor, _ in graph[vertex]:
-            if neighbor not in visited:
-                dfs(graph, neighbor, visited)
+    def dfs(input_graph, vertex, is_visited):
+        is_visited.add(vertex)
+        for neighbor, _ in input_graph[vertex]:
+            if neighbor not in is_visited:
+                dfs(input_graph, neighbor, is_visited)
 
     connectivityCheck = set()
     while len(connectivityCheck) != numVertices:
         potentialGraph = randomizer(numVertices, numEdges, weights)
         visited = set()
-        dfs(potentialGraph.graph, 'A', visited)  # Start with 'A'
+        dfs(potentialGraph.graph, 'A', visited)
         connectivityCheck = visited
 
     return potentialGraph
 
 
-def dijkstra(graph, source):
-    distances = {vertex: float('inf') for vertex in graph}
+def dijkstra(input_graph, source):
+    distances = {vertex: float('inf') for vertex in input_graph}
     distances[source] = 0
 
     priority_queue = [(0, source)]
@@ -82,7 +84,7 @@ def dijkstra(graph, source):
         if current_distance > distances[current_vertex]:
             continue
 
-        for neighbor, edge_weight in graph[current_vertex]:
+        for neighbor, edge_weight in input_graph[current_vertex]:
             distance = current_distance + edge_weight
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
@@ -91,33 +93,33 @@ def dijkstra(graph, source):
     return distances
 
 
-def kruskal(graph):
+def kruskal(input_graph):
     edges = []
-    for vertex in graph.graph:  # Access the 'graph' attribute
-        for neighbor, edge_weight in graph.graph[vertex]:  # Access the 'graph' attribute
+    for vertex in input_graph.graph:
+        for neighbor, edge_weight in input_graph.graph[vertex]:
             edges.append((edge_weight, vertex, neighbor))
 
     edges.sort()
-    parent = {vertex: vertex for vertex in graph.graph}
+    parent = {vertex: vertex for vertex in input_graph.graph}
     tree = []
 
-    def find(parent, vertex):
-        if parent[vertex] != vertex:
-            parent[vertex] = find(parent, parent[vertex])
-        return parent[vertex]
+    def find(input_parent, input_vertex):
+        if input_parent[input_vertex] != input_vertex:
+            input_parent[input_vertex] = find(input_parent, input_parent[input_vertex])
+        return input_parent[input_vertex]
 
-    def union(parent, rank, vertex1, vertex2):
-        root1 = find(parent, vertex1)
-        root2 = find(parent, vertex2)
-        if rank[root1] < rank[root2]:
-            parent[root1] = root2
-        elif rank[root1] > rank[root2]:
-            parent[root2] = root1
+    def union(input_parent, input_rank, vert_1, vert_2):
+        root1 = find(input_parent, vert_1)
+        root2 = find(input_parent, vert_2)
+        if input_rank[root1] < input_rank[root2]:
+            input_parent[root1] = root2
+        elif input_rank[root1] > input_rank[root2]:
+            input_parent[root2] = root1
         else:
-            parent[root2] = root1
+            input_parent[root2] = root1
             rank[root1] += 1
 
-    rank = {vertex: 0 for vertex in graph.graph}
+    rank = {vertex: 0 for vertex in input_graph.graph}
     for edge in edges:
         weight, vertex1, vertex2 = edge
         if find(parent, vertex1) != find(parent, vertex2):
@@ -127,10 +129,10 @@ def kruskal(graph):
     return tree
 
 
-def prim(graph):
+def prim(input_graph):
     tree = []
     visited = set()
-    start_vertex = next(iter(graph.graph))  # Access the 'graph' attribute
+    start_vertex = next(iter(input_graph.graph))
 
     priority_queue = [(0, start_vertex)]
     while priority_queue:
@@ -139,7 +141,7 @@ def prim(graph):
             continue
         visited.add(current_vertex)
 
-        for neighbor, edge_weight in graph.graph[current_vertex]:  # Access the 'graph' attribute
+        for neighbor, edge_weight in input_graph.graph[current_vertex]:
             if neighbor not in visited:
                 heapq.heappush(priority_queue, (edge_weight, neighbor))
                 tree.append((current_vertex, neighbor, edge_weight))
@@ -149,38 +151,38 @@ def prim(graph):
 
 def time_measure():
     n_vector = [5, 10, 15, 20]
-    results = [[], []]
+    time_results = [[], []]
 
     for element in n_vector:
         time_kruskal = 0
         time_prim = 0
         for i in range(1, 100):
-            graph = randomGraph(element, element, element)
+            rand_graph = randomGraph(element, element, element)
             start = time.perf_counter_ns()
-            kruskal(graph)
+            kruskal(rand_graph)
             stop = time.perf_counter_ns()
             time_kruskal += (stop - start)
 
             start = time.perf_counter_ns()
-            prim(graph)
+            prim(rand_graph)
             stop = time.perf_counter_ns()
             time_prim += (stop - start)
 
-        results[0].append(time_kruskal / 100)
-        results[1].append(time_prim / 100)
+        time_results[0].append(time_kruskal / 100)
+        time_results[1].append(time_prim / 100)
 
-    return results
+    return time_results
 
 
 results = time_measure()
 
 
-def plot_execution_time(results):
+def plot_execution_time(input_results):
     n_vector = [5, 10, 15, 20]
     labels = ['Kruskal', 'Prim']
 
-    for i, result in enumerate(results):
-        plot.plot(n_vector, result, label=labels[i])
+    for i, input_results in enumerate(input_results):
+        plot.plot(n_vector, input_results, label=labels[i])
 
     plot.xlabel('Liczba węzłów')
     plot.ylabel('Czas wykonania [ns]')
@@ -194,23 +196,24 @@ print(results)
 plot_execution_time(results)
 
 
-def calculate_shortest_routes(graph):
-    shortest_routes = {}
-    vertices = list(graph.graph.keys())
+def calculate_shortest_routes(input_graph):
+    routes = {}
+    vertices = list(input_graph.graph.keys())
 
     for source in vertices:
-        distances = dijkstra(graph.graph, source)
+        distances = dijkstra(input_graph.graph, source)
         for destination in vertices:
             if source != destination:
-                shortest_routes[(source, destination)] = distances[destination]
+                routes[(source, destination)] = distances[destination]
 
-    return shortest_routes
+    return routes
 
 
-def display_shortest_routes(shortest_routes):
+def display_shortest_routes(route_results):
     print("Najkrótsze trasy:")
-    for (source, destination), distance in shortest_routes.items():
+    for (source, destination), distance in route_results.items():
         print(f"{source} - {destination}: {distance}")
+
 
 graph = Graph()
 graph.add_edge('A', 'G', 5)
